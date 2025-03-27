@@ -1,0 +1,19 @@
+{
+    "name": "grocery-delivery-website",
+    "version": "1.0.0",
+    "description": "A grocery delivery website with order tracking",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js",
+      "dev": "nodemon app.js"
+    },
+    "dependencies": {
+      "bcryptjs": "^2.4.3",
+      "ejs": "^3.1.8",
+      "express": "^4.18.2",
+      "express-session": "^1.17.3"
+    },
+    "devDependencies": {
+      "nodemon": "^2.0.20"
+    }
+  }

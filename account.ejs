@@ -1,0 +1,66 @@
+<%- include('partials/header') %>
+
+<section class="account-section">
+    <div class="account-container">
+        <div class="account-sidebar">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2><%= user.name %></h2>
+                <p><%= user.email %></p>
+            </div>
+            
+            <nav class="account-nav">
+                <ul>
+                    <li class="active"><a href="/account">My Orders</a></li>
+                    <li><a href="/account/profile">Profile</a></li>
+                    <li><a href="/account/addresses">Addresses</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+        
+        <div class="account-content">
+            <h1>My Orders</h1>
+            
+            <% if (orders.length === 0) { %>
+                <p>You haven't placed any orders yet. <a href="/products">Start shopping</a></p>
+            <% } else { %>
+                <div class="orders-list">
+                    <% orders.forEach(order => { %>
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div>
+                                    <h3>Order #<%= order.orderId %></h3>
+                                    <p>Placed on <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                                </div>
+                                <div class="order-status <%= order.status %>">
+                                    <%= order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('-', ' ') %>
+                                </div>
+                            </div>
+                            
+                            <div class="order-summary">
+                                <div class="order-items-preview">
+                                    <% order.items.slice(0, 3).forEach(item => { %>
+                                        <img src="<%= item.product.image %>" alt="<%= item.product.name %>">
+                                    <% }); %>
+                                    <% if (order.items.length > 3) { %>
+                                        <span class="more-items">+<%= order.items.length - 3 %> more</span>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="order-total">
+                                    <p>$<%= order.total.toFixed(2) %></p>
+                                    <a href="/track/<%= order.trackingId %>" class="btn">Track Order</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

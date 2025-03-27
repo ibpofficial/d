@@ -1,0 +1,81 @@
+<%- include('partials/header') %>
+
+<section class="tracking-section">
+    <h1>Track Your Order</h1>
+    
+    <div class="tracking-container">
+        <div class="tracking-info">
+            <div class="tracking-header">
+                <div>
+                    <h2>Order #<%= order.orderId %></h2>
+                    <p>Placed on <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                </div>
+                <div class="tracking-id">
+                    <span>Tracking ID:</span>
+                    <strong><%= order.trackingId %></strong>
+                </div>
+            </div>
+            
+            <div class="tracking-steps">
+                <% const statuses = ['processing', 'packed', 'shipped', 'out-for-delivery', 'delivered']; %>
+                <% statuses.forEach((status, index) => { %>
+                    <div class="tracking-step <%= order.status === status ? 'active' : '' %> 
+                        <%= statuses.indexOf(order.status) > index ? 'completed' : '' %>">
+                        <div class="step-icon">
+                            <% if (statuses.indexOf(order.status) > index) { %>
+                                <i class="fas fa-check"></i>
+                            <% } else { %>
+                                <%= index + 1 %>
+                            <% } %>
+                        </div>
+                        <div class="step-details">
+                            <h3><%= status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ') %></h3>
+                            <% const statusUpdate = order.statusHistory.find(s => s.status === status); %>
+                            <% if (statusUpdate) { %>
+                                <p><%= new Date(statusUpdate.timestamp).toLocaleString() %></p>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+        
+        <div class="order-details">
+            <h2>Order Details</h2>
+            
+            <div class="delivery-info">
+                <h3>Delivery Information</h3>
+                <p><strong>Address:</strong> <%= order.deliveryAddress %></p>
+                <p><strong>Time:</strong> 
+                    <%= order.deliveryTime === 'asap' ? 'As soon as possible' : 
+                       order.deliveryTime === 'morning' ? 'Morning (8am-12pm)' :
+                       order.deliveryTime === 'afternoon' ? 'Afternoon (12pm-5pm)' : 'Evening (5pm-9pm)' %>
+                </p>
+            </div>
+            
+            <div class="payment-info">
+                <h3>Payment Information</h3>
+                <p><strong>Method:</strong> 
+                    <%= order.paymentMethod === 'credit-card' ? 'Credit Card' : 
+                       order.paymentMethod === 'paypal' ? 'PayPal' : 'Cash on Delivery' %>
+                </p>
+                <p><strong>Total:</strong> $<%= order.total.toFixed(2) %></p>
+            </div>
+            
+            <div class="order-items">
+                <h3>Items Ordered</h3>
+                <% order.items.forEach(item => { %>
+                    <div class="order-item">
+                        <img src="<%= item.product.image %>" alt="<%= item.product.name %>">
+                        <div class="item-details">
+                            <h4><%= item.product.name %></h4>
+                            <p>$<%= item.product.price.toFixed(2) %> x <%= item.quantity %></p>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

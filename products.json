@@ -1,0 +1,82 @@
+[
+    {
+        "id": "prod1",
+        "name": "Organic Apples",
+        "price": 2.99,
+        "category": "fruits",
+        "image": "/images/products/apples.jpg",
+        "description": "Fresh organic apples from local farms."
+    },
+    {
+        "id": "prod2",
+        "name": "Bananas",
+        "price": 0.99,
+        "category": "fruits",
+        "image": "/images/products/bananas.jpg",
+        "description": "Ripe bananas, perfect for snacks or smoothies."
+    },
+    {
+        "id": "prod3",
+        "name": "Carrots",
+        "price": 1.49,
+        "category": "vegetables",
+        "image": "/images/products/carrots.jpg",
+        "description": "Fresh crunchy carrots, great for cooking or snacking."
+    },
+    {
+        "id": "prod4",
+        "name": "Milk",
+        "price": 3.49,
+        "category": "dairy",
+        "image": "/images/products/milk.jpg",
+        "description": "Fresh whole milk, 1 gallon."
+    },
+    {
+        "id": "prod5",
+        "name": "Whole Wheat Bread",
+        "price": 2.49,
+        "category": "bakery",
+        "image": "/images/products/bread.jpg",
+        "description": "Freshly baked whole wheat bread."
+    },
+    {
+        "id": "prod6",
+        "name": "Eggs",
+        "price": 2.99,
+        "category": "dairy",
+        "image": "/images/products/eggs.jpg",
+        "description": "Farm fresh eggs, dozen."
+    },
+    {
+        "id": "prod7",
+        "name": "Tomatoes",
+        "price": 1.99,
+        "category": "vegetables",
+        "image": "/images/products/tomatoes.jpg",
+        "description": "Juicy vine-ripened tomatoes."
+    },
+    {
+        "id": "prod8",
+        "name": "Chicken Breast",
+        "price": 5.99,
+        "category": "meat",
+        "image": "/images/products/chicken.jpg",
+        "description": "Boneless skinless chicken breast, 1 lb."
+    },
+    {
+        "id": "prod9",
+        "name": "Pasta",
+        "price": 1.29,
+        "category": "pantry",
+        "image": "/images/products/pasta.jpg",
+        "description": "Italian style pasta, 16 oz."
+    },
+    {
+        "id": "prod10",
+        "name": "Orange Juice",
+        "price": 3.99,
+        "category": "beverages",
+        "image": "/images/products/orange-juice.jpg",
+        "description": "100% pure squeezed orange juice, 64 oz."
+    }
+]

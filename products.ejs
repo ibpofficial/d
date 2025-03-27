@@ -1,0 +1,40 @@
+<%- include('partials/header', {cartItems: []}) %>
+
+<section class="products-header">
+    <h1>Our Products</h1>
+    <div class="category-filter">
+        <label for="category">Filter by Category:</label>
+        <select id="category" onchange="filterProducts()">
+            <option value="all">All Categories</option>
+            <% categories.forEach(category => { %>
+                <option value="<%= category %>" <%= category === selectedCategory ? 'selected' : '' %>>
+                    <%= category.charAt(0).toUpperCase() + category.slice(1) %>
+                </option>
+            <% }); %>
+        </select>
+    </div>
+</section>
+
+<section class="product-grid">
+    <% products.forEach(product => { %>
+        <div class="product-card">
+            <img src="<%= product.image %>" alt="<%= product.name %>">
+            <h3><%= product.name %></h3>
+            <p class="price">$<%= product.price.toFixed(2) %></p>
+            <form action="/add-to-cart" method="POST">
+                <input type="hidden" name="productId" value="<%= product.id %>">
+                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                <button type="submit" class="btn">Add to Cart</button>
+            </form>
+        </div>
+    <% }); %>
+</section>
+
+<script>
+    function filterProducts() {
+        const category = document.getElementById('category').value;
+        window.location.href = `/products?category=${category}`;
+    }
+</script>
+
+<%- include('partials/footer') %>

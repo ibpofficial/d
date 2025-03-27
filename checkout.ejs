@@ -1,0 +1,111 @@
+<%- include('partials/header', {cartItems: cartItems}) %>
+
+<section class="checkout-section">
+    <h1>Checkout</h1>
+    
+    <div class="checkout-container">
+        <div class="checkout-form">
+            <h2>Delivery Information</h2>
+            <form action="/place-order" method="POST">
+                <div class="form-group">
+                    <label for="deliveryAddress">Delivery Address</label>
+                    <textarea id="deliveryAddress" name="deliveryAddress" required><%= user.address || '' %></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deliveryTime">Preferred Delivery Time</label>
+                    <select id="deliveryTime" name="deliveryTime" required>
+                        <option value="asap">As soon as possible</option>
+                        <option value="morning">Morning (8am-12pm)</option>
+                        <option value="afternoon">Afternoon (12pm-5pm)</option>
+                        <option value="evening">Evening (5pm-9pm)</option>
+                    </select>
+                </div>
+                
+                <h2>Payment Method</h2>
+                <div class="payment-methods">
+                    <div class="payment-option">
+                        <input type="radio" id="credit-card" name="paymentMethod" value="credit-card" checked>
+                        <label for="credit-card">Credit Card</label>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="paypal" name="paymentMethod" value="paypal">
+                        <label for="paypal">PayPal</label>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="cash" name="paymentMethod" value="cash">
+                        <label for="cash">Cash on Delivery</label>
+                    </div>
+                </div>
+                
+                <div id="credit-card-details" class="payment-details">
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry Date</label>
+                            <input type="text" id="expiryDate" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Place Order</button>
+            </form>
+        </div>
+        
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+            <div class="order-items">
+                <% cartItems.forEach(item => { %>
+                    <div class="order-item">
+                        <div class="item-info">
+                            <span class="item-name"><%= item.product.name %></span>
+                            <span class="item-quantity">x<%= item.quantity %></span>
+                        </div>
+                        <span class="item-price">$<%= (item.product.price * item.quantity).toFixed(2) %></span>
+                    </div>
+                <% }); %>
+            </div>
+            
+            <div class="order-totals">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>$<%= subtotal.toFixed(2) %></span>
+                </div>
+                <div class="total-row">
+                    <span>Delivery Fee:</span>
+                    <span>$<%= deliveryFee.toFixed(2) %></span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total:</span>
+                    <span>$<%= total.toFixed(2) %></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+        const creditCardDetails = document.getElementById('credit-card-details');
+        
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function() {
+                if (this.value === 'credit-card') {
+                    creditCardDetails.style.display = 'block';
+                } else {
+                    creditCardDetails.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,47 @@
+<%- include('partials/header', {cartItems: []}) %>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Fresh Groceries Delivered to Your Door</h1>
+        <p>Shop from the comfort of your home and get your groceries delivered fast.</p>
+        <a href="/products" class="btn">Shop Now</a>
+    </div>
+</section>
+
+<section class="featured-products">
+    <h2>Featured Products</h2>
+    <div class="product-grid">
+        <% featuredProducts.forEach(product => { %>
+            <div class="product-card">
+                <img src="<%= product.image %>" alt="<%= product.name %>">
+                <h3><%= product.name %></h3>
+                <p class="price">$<%= product.price.toFixed(2) %></p>
+                <form action="/add-to-cart" method="POST">
+                    <input type="hidden" name="productId" value="<%= product.id %>">
+                    <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                    <button type="submit" class="btn">Add to Cart</button>
+                </form>
+            </div>
+        <% }); %>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <i class="fas fa-truck"></i>
+        <h3>Fast Delivery</h3>
+        <p>Get your groceries delivered within 2 hours.</p>
+    </div>
+    <div class="feature">
+        <i class="fas fa-leaf"></i>
+        <h3>Fresh Products</h3>
+        <p>We source only the freshest products for you.</p>
+    </div>
+    <div class="feature">
+        <i class="fas fa-undo"></i>
+        <h3>Easy Returns</h3>
+        <p>Not satisfied? We offer easy returns.</p>
+    </div>
+</section>
+
+<%- include('partials/footer') %>
