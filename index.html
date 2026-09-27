@@ -1,181 +1,591 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FastFetch — GitHub Direct File Hub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>FastFetch Doodle Hub — Download All Files</title>
   <!-- Fast, lightweight client-side QR generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            brand: {
-              400: '#38bdf8',
-              500: '#0284c7',
-              accent: '#10b981'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&display=swap" rel="stylesheet">
 
   <style>
+    /* --- From Uiverse.io by mamyapro123 & Coordinated Doodle Palette --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background-color: #09090b;
-      color: #fafafa;
-      font-family: 'Inter', sans-serif;
+      background-color: #f4f1de;
+      background-image: 
+        radial-gradient(#e07a5f 0.75px, transparent 0.75px),
+        radial-gradient(#3d405b 0.75px, #f4f1de 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem 1rem;
+      font-family: "Patrick Hand", cursive, sans-serif;
+      color: #1e1e24;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
+
+    .doodle-page-title {
+      font-family: "Permanent Marker", cursive, sans-serif;
+      font-size: 2.2rem;
+      color: #1e1e24;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 3px 3px 0 #ffd166;
+      letter-spacing: 1px;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #18181b;
+
+    .doodle-upload-container {
+      --ink-color: #1e1e24;
+      --zone-bg: #fffdf9;
+      --paper-line: #bde0fe;
+
+      --folder-back: #fca311; /* Rich Amber */
+      --folder-front: #ffd166; /* Warm Sunflower Yellow */
+
+      /* The Best Button Colors */
+      --btn-default: #c6e377; /* Fresh Mint Green (Action) */
+      --btn-hover: #c0bbfe; /* Watermelon Pink (Reaction) */
+      --accent-blue: #118ab2; /* Deep playful blue for accents */
+
+      --paper-file: #ffffff;
+
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 320px;
+      height: 300px;
+      padding: 20px;
+      cursor: pointer;
+      margin-bottom: 2rem;
+
+      /* Lined Paper Background */
+      background:
+        linear-gradient(var(--zone-bg) 20px, transparent 20px) 0 0 / 100% 24px,
+        linear-gradient(var(--paper-line) 2px, transparent 2px) 0 20px / 100% 24px
+          var(--zone-bg);
+
+      border: 3px dashed var(--ink-color);
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      box-shadow: 8px 8px 0 rgba(30, 30, 36, 0.15); /* Soft drop shadow on container */
+
+      transition:
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.4s ease;
+      filter: url(#doodle-jitter);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #27272a;
-      border-radius: 9999px;
+
+    .hidden-file-input {
+      display: none;
     }
-    .glass-surface {
-      background: rgba(18, 18, 23, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+
+    /* --- FOLDER LAYERS --- */
+    .doodle-folder {
+      position: relative;
+      width: 140px;
+      height: 105px;
+      margin-bottom: 25px;
+      animation: doodleFloat 3.5s infinite ease-in-out;
+      z-index: 2;
+    }
+
+    .folder-back {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 85px;
+      background: var(--folder-back);
+      border: 3px solid var(--ink-color);
+      border-radius: 10px 255px 15px 225px / 255px 10px 225px 15px;
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.15);
+      z-index: 1;
+    }
+
+    .folder-tab {
+      position: absolute;
+      top: -15px;
+      left: 10px;
+      width: 45px;
+      height: 20px;
+      background: var(--folder-back);
+      border: 3px solid var(--ink-color);
+      border-bottom: none;
+      border-radius: 10px 15px 0 0 / 255px 255px 0 0;
+    }
+
+    .folder-front {
+      position: absolute;
+      bottom: -2px;
+      left: -4px;
+      width: calc(100% + 8px);
+      height: 70px;
+      background: var(--folder-front);
+      border: 3px solid var(--ink-color);
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      box-shadow: 4px 4px 0 rgba(30, 30, 36, 0.15);
+      z-index: 3;
+      transform-origin: bottom center;
+      transition:
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background 0.3s ease;
+    }
+
+    .folder-smile {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 30px;
+    }
+
+    /* --- PAPERS --- */
+    .doodle-papers {
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    .paper {
+      position: absolute;
+      bottom: 10px;
+      width: 55px;
+      height: 70px;
+      background: var(--paper-file);
+      border: 2px solid var(--ink-color);
+      border-radius: 4px;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 8px;
+      box-shadow: 2px 2px 0 rgba(30, 30, 36, 0.1);
+    }
+
+    .file-1 {
+      left: 15px;
+      transform: rotate(-5deg) translateY(0);
+    }
+    .file-2 {
+      right: 15px;
+      transform: rotate(5deg) translateY(0);
+    }
+
+    .scribble-line {
+      height: 4px;
+      background: var(--ink-color);
+      margin-bottom: 6px;
+      border-radius: 2px;
+      width: 100%;
+      opacity: 0.8;
+    }
+    .scribble-line.short {
+      width: 60%;
+    }
+    .doodle-image-icon {
+      width: 100%;
+      height: 100%;
+      opacity: 0.8;
+    }
+
+    /* --- THE NEW PERFECT BUTTON --- */
+    .doodle-btn {
+      background: var(--btn-default);
+      border: 3px solid var(--ink-color);
+      padding: 12px 28px;
+      border-radius: 15px 255px 15px 225px / 255px 15px 225px 15px;
+      box-shadow: 4px 4px 0 var(--ink-color);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 3;
+    }
+
+    .btn-text {
+      font-family: "Permanent Marker", cursive, sans-serif;
+      font-size: 19px;
+      color: var(--ink-color);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 0 #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    /* --- DECORATIONS --- */
+    .doodle-decor {
+      position: absolute;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0;
+      transition:
+        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        opacity 0.3s ease;
+    }
+
+    .sparkle-1 {
+      width: 24px;
+      top: 30px;
+      right: 40px;
+      transform: scale(0) rotate(0deg);
+    }
+    .star-1 {
+      width: 30px;
+      top: 50px;
+      left: 30px;
+      transform: scale(0) rotate(0deg);
+    }
+    .doodle-paperclip {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      width: 40px;
+      height: 40px;
+      z-index: 10;
+      transform: rotate(-15deg);
+    }
+
+    /* --- HOVER ANIMATIONS --- */
+    @keyframes doodleFloat {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-6px) rotate(2deg);
+      }
+    }
+
+    @keyframes paperWiggle {
+      0%,
+      100% {
+        transform: rotate(-15deg) translateY(-40px);
+      }
+      50% {
+        transform: rotate(-10deg) translateY(-45px);
+      }
+    }
+    @keyframes paperWiggle2 {
+      0%,
+      100% {
+        transform: rotate(18deg) translateY(-35px);
+      }
+      50% {
+        transform: rotate(22deg) translateY(-30px);
+      }
+    }
+
+    .doodle-upload-container:hover {
+      transform: translateY(-4px);
+      box-shadow: 10px 10px 0 var(--ink-color);
+      border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+    }
+
+    .doodle-upload-container:hover .folder-front {
+      transform: scaleY(0.85) skewX(-5deg);
+      background: #ffe285;
+    }
+
+    .doodle-upload-container:hover .file-1 {
+      animation: paperWiggle 1.5s infinite ease-in-out;
+    }
+    .doodle-upload-container:hover .file-2 {
+      animation: paperWiggle2 1.5s infinite ease-in-out 0.2s;
+    }
+
+    /* THE BUTTON UPGRADE ON HOVER */
+    .doodle-upload-container:hover .doodle-btn {
+      background: var(--btn-hover);
+      transform: scale(1.08) rotate(-3deg) translateY(-4px); /* Bigger, more playful pop */
+      box-shadow: 6px 6px 0 var(--ink-color);
+    }
+    .doodle-upload-container:hover .btn-text {
+      color: rgba(255, 255, 255, 0.85); /* Text turns white */
+      text-shadow: 2px 2px 0 var(--ink-color); /* Shadow turns dark */
+    }
+
+    .doodle-upload-container:hover .doodle-decor {
+      opacity: 1;
+    }
+    .doodle-upload-container:hover .sparkle-1 {
+      transform: scale(1.2) rotate(15deg);
+    }
+    .doodle-upload-container:hover .star-1 {
+      transform: scale(1.3) rotate(-20deg);
+    }
+
+    .doodle-upload-container:active {
+      transform: translate(6px, 6px);
+      box-shadow: 2px 2px 0 var(--ink-color);
+    }
+    .doodle-upload-container:active .doodle-btn {
+      transform: scale(0.95);
+      box-shadow: 2px 2px 0 var(--ink-color);
+    }
+
+    /* Notebook Section & Cards */
+    .doodle-section {
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .doodle-search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+
+    .doodle-search-input {
+      flex: 1;
+      padding: 10px 16px;
+      font-family: "Patrick Hand", cursive, sans-serif;
+      font-size: 1.1rem;
+      border: 3px solid #1e1e24;
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      background: #ffffff;
+      outline: none;
+      box-shadow: 3px 3px 0 #1e1e24;
+    }
+
+    .doodle-small-btn {
+      padding: 8px 18px;
+      font-family: "Permanent Marker", cursive, sans-serif;
+      font-size: 1rem;
+      background: #c6e377;
+      border: 3px solid #1e1e24;
+      border-radius: 15px 255px 15px 225px / 255px 15px 225px 15px;
+      box-shadow: 3px 3px 0 #1e1e24;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1e1e24;
+      user-select: none;
+    }
+    .doodle-small-btn:hover {
+      background: #c0bbfe;
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 #1e1e24;
+    }
+    .doodle-small-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #1e1e24;
+    }
+
+    .doodle-card {
+      background: #ffffff;
+      border: 3px solid #1e1e24;
+      border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+      padding: 16px;
+      margin-bottom: 1.2rem;
+      box-shadow: 6px 6px 0 rgba(30, 30, 36, 0.15);
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .doodle-card:hover {
+      transform: translateY(-3px) rotate(-0.5deg);
+      box-shadow: 8px 8px 0 #1e1e24;
+    }
+
+    .doodle-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ffd166;
+      border: 2px solid #1e1e24;
+      border-radius: 10px;
+      font-family: "Permanent Marker", cursive, sans-serif;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    /* Modal Overlay & Toast */
+    .doodle-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(30, 30, 36, 0.6);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .doodle-modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .doodle-modal-box {
+      background: #fffdf9;
+      border: 4px solid #1e1e24;
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      padding: 20px;
+      width: 100%;
+      max-width: 350px;
+      box-shadow: 10px 10px 0 #1e1e24;
+      text-align: center;
+      position: relative;
+    }
+
+    .doodle-toast {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 1000;
+      background: #c6e377;
+      border: 3px solid #1e1e24;
+      border-radius: 15px 255px 15px 225px / 255px 15px 225px 15px;
+      padding: 10px 18px;
+      font-family: "Patrick Hand", cursive, sans-serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #1e1e24;
+      box-shadow: 4px 4px 0 #1e1e24;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .doodle-toast.hidden-toast {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+<body>
 
-  <!-- Top Minimal Header -->
-  <header class="border-b border-zinc-800/80 glass-surface sticky top-0 z-40">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
-            FastFetch <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">GitHub Direct</span>
-          </h1>
-        </div>
-      </div>
+  <!-- SVG Filter Definition for Hand-Drawn Doodle Jitter Effect -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="doodle-jitter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
 
-      <div class="flex items-center gap-2">
-        <button 
-          id="btn-download-all" 
-          onclick="downloadAllFiles()" 
-          class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition"
-        >
-          <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Download All
-        </button>
+  <h1 class="doodle-page-title">✏️ FastFetch File Hub 📁</h1>
 
-        <button 
-          onclick="openShareHubQr()" 
-          class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-black font-semibold transition flex items-center gap-1.5"
-          title="Open this page on another phone or computer"
-        >
-          <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-          </svg>
-          Beam to Device
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <!-- Doodle Folder Download-All Interactive Zone -->
+  <div class="doodle-upload-container" onclick="downloadAllFiles()" title="Click to download all 3 files instantly!">
     
-    <!-- Auto-download trigger banner (appears if ?download=id is loaded) -->
-    <div id="autodownload-banner" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <span class="relative flex h-3 w-3">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-        </span>
-        <span class="text-xs font-mono" id="autodownload-msg">Auto-triggering download for file...</span>
+    <!-- Paperclip Decoration -->
+    <svg class="doodle-paperclip" viewBox="0 0 50 50">
+      <path d="M15 15 L35 15 C40 15 40 35 35 35 L15 35 C10 35 10 20 15 20 L30 20" fill="none" stroke="#1e1e24" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Sparkles and Stars -->
+    <svg class="doodle-decor sparkle-1" viewBox="0 0 50 50">
+      <path d="M25 0 L30 20 L50 25 L30 30 L25 50 L20 30 L0 25 L20 20 Z" fill="#ffd166" stroke="#1e1e24" stroke-width="3"/>
+    </svg>
+    <svg class="doodle-decor star-1" viewBox="0 0 50 50">
+      <path d="M25 0 L32 15 L49 18 L37 30 L40 47 L25 39 L10 47 L13 30 L1 18 L18 15 Z" fill="#c0bbfe" stroke="#1e1e24" stroke-width="3"/>
+    </svg>
+
+    <!-- Folder Animation Layers -->
+    <div class="doodle-folder">
+      <div class="folder-tab"></div>
+      <div class="folder-back"></div>
+      
+      <!-- Popping Papers -->
+      <div class="doodle-papers">
+        <div class="paper file-1">
+          <div class="scribble-line"></div>
+          <div class="scribble-line short"></div>
+          <div class="scribble-line"></div>
+        </div>
+        <div class="paper file-2">
+          <div class="scribble-line"></div>
+          <div class="scribble-line"></div>
+          <div class="scribble-line short"></div>
+        </div>
       </div>
-      <button onclick="dismissAutoBanner()" class="text-xs text-zinc-400 hover:text-white">Dismiss</button>
+
+      <div class="folder-front">
+        <svg class="folder-smile" viewBox="0 0 40 40">
+          <circle cx="12" cy="12" r="3" fill="#1e1e24"/>
+          <circle cx="28" cy="12" r="3" fill="#1e1e24"/>
+          <path d="M 10 20 Q 20 30 30 20" stroke="#1e1e24" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
 
-    <!-- Quick info bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-zinc-400">
-      <div>
-        <span class="font-medium text-zinc-200" id="file-counter-label">Configured Documents</span>
-        <span class="text-zinc-500 ml-1.5">— Hosted securely on GitHub</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <input 
-          id="search-input" 
-          type="text" 
-          placeholder="Filter files..." 
-          oninput="filterFiles(this.value)"
-          class="w-full sm:w-48 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
-        />
+    <!-- Download All Button -->
+    <button class="doodle-btn" type="button" onclick="event.stopPropagation(); downloadAllFiles();">
+      <span class="btn-text">DOWNLOAD ALL (3)</span>
+    </button>
+  </div>
+
+  <!-- Notebook File List Section -->
+  <div class="doodle-section">
+    
+    <!-- Search Bar -->
+    <div class="doodle-search-box">
+      <input 
+        id="search-input" 
+        type="text" 
+        class="doodle-search-input" 
+        placeholder="Search documents by name..." 
+        oninput="filterFiles(this.value)"
+      />
+      <button class="doodle-small-btn" onclick="openShareHubQr()">📱 BEAM HUB</button>
+    </div>
+
+    <!-- Auto-download trigger banner -->
+    <div id="autodownload-banner" class="doodle-card hidden" style="background: #fff3b0;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="autodownload-msg" style="font-size: 1.1rem;">⚡ Auto-triggering download for file...</span>
+        <button onclick="dismissAutoBanner()" class="doodle-small-btn" style="padding: 4px 10px;">Dismiss</button>
       </div>
     </div>
 
-    <!-- Files Grid -->
-    <div id="file-grid" class="grid grid-cols-1 justify-items-center gap-3.5">
+    <!-- File Grid -->
+    <div id="file-grid">
       <!-- Injected dynamically from CONFIG_FILES -->
     </div>
 
-    <!-- Empty state -->
-    <div id="empty-state" class="hidden py-16 text-center text-zinc-500 text-xs">
-      No files match your search criteria.
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden" style="text-align: center; padding: 2rem; font-size: 1.2rem; color: #808080;">
+      ✏️ No matching documents found.
     </div>
 
-  </main>
+    <!-- Counter Label -->
+    <div style="text-align: center; margin-top: 1rem; font-size: 1.1rem; color: #1e1e24;">
+      <span id="file-counter-label">Configured Documents (3)</span> — Hosted direct on GitHub
+    </div>
+  </div>
 
-  <footer class="border-t border-zinc-800/80 py-4 px-6 text-center text-[11px] text-zinc-500">
-    Tip: Add your files in <code class="text-zinc-400 font-mono">CONFIG_FILES</code> array inside <code class="text-zinc-400 font-mono">index.html</code>. Scan any card's QR code on another phone/device to download instantly.
-  </footer>
-
-  <!-- Modal for QR code display -->
-  <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="glass-surface w-full max-w-sm rounded-2xl p-6 border border-zinc-700 shadow-2xl relative text-center space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 id="modal-qr-title" class="text-sm font-semibold text-white truncate max-w-[240px]">Scan to Download</h3>
-        <button onclick="closeQrModal()" class="text-zinc-400 hover:text-white p-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <p id="modal-qr-desc" class="text-xs text-zinc-400">
-        Point another phone camera at this code. The file will download immediately.
+  <!-- QR Code Modal (styled as Doodle notebook note) -->
+  <div id="qr-modal" class="doodle-modal-overlay hidden">
+    <div class="doodle-modal-box">
+      <h3 id="modal-qr-title" style="font-family: 'Permanent Marker', cursive; font-size: 1.4rem; margin-bottom: 8px;">Scan to Download</h3>
+      <p id="modal-qr-desc" style="font-size: 1rem; margin-bottom: 12px; color: #3d405b;">
+        Point another phone camera at this code to download directly.
       </p>
 
-      <div class="flex justify-center p-3 bg-white rounded-xl mx-auto w-fit shadow-md">
+      <div style="display: flex; justify-content: center; background: #ffffff; padding: 10px; border: 3px solid #1e1e24; border-radius: 12px; width: fit-content; margin: 0 auto 15px auto;">
         <div id="modal-qrcode"></div>
       </div>
 
-      <div class="space-y-2 pt-2">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
         <button 
           id="modal-copy-link-btn" 
           onclick="copyModalLink()" 
-          class="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1.5"
+          class="doodle-small-btn"
+          style="width: 100%;"
         >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-          <span id="modal-copy-text">Copy Transfer Link</span>
+          📋 <span id="modal-copy-text">Copy Transfer Link</span>
         </button>
         <button 
           onclick="closeQrModal()" 
-          class="w-full py-1 text-zinc-500 hover:text-zinc-300 text-xs"
+          class="doodle-small-btn"
+          style="width: 100%; background: #ffd166;"
         >
           Close
         </button>
@@ -183,22 +593,17 @@
     </div>
   </div>
 
-  <!-- Toast notification -->
-  <div id="toast" class="fixed bottom-4 right-4 z-50 transform translate-y-16 opacity-0 transition duration-200 pointer-events-none">
-    <div class="px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-emerald-400 text-xs font-mono flex items-center gap-2 shadow-xl">
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-      <span id="toast-text">Message</span>
-    </div>
+  <!-- Toast Notification Pop-up -->
+  <div id="toast" class="doodle-toast hidden-toast">
+    <span>💡</span>
+    <span id="toast-text">Notification</span>
   </div>
 
   <script>
     /**
      * =========================================================================
-     *  CONFIG_FILES - EDIT YOUR GITHUB FILE ADDRESSES HERE
+     *  CONFIG_FILES - ALL THREE GITHUB FILE ADDRESSES
      * =========================================================================
-     * Paste raw GitHub links (`raw.githubusercontent.com/...`) or direct asset links.
-     * Note: If you paste a github.com/.../blob/... link, the app will automatically
-     * convert it into a raw.githubusercontent.com link for direct downloading.
      */
     const CONFIG_FILES = [
       {
@@ -206,32 +611,25 @@
         name: "C_Programming_Practical_Index.dox",
         description: "Official finalized documentation & architecture blueprint.",
         size: "2.4 MB",
-        badge: "PDF",
-        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-        // Put your raw GitHub document address here:
+        badge: "DOCX",
         url: "https://github.com/ibpofficial/d/blob/58cd1311d33c469815b5c5610d07eb4f233d4e3e/C_Programming_Practical_Index.docx"
       },
-       {
-        id: "doc-1",
+      {
+        id: "doc-2",
         name: "123.main.doc",
         description: "Official finalized documentation & architecture blueprint.",
         size: "2.4 MB",
-        badge: "PDF",
-        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-        // Put your raw GitHub document address here:
+        badge: "DOCX",
         url: "https://github.com/ibpofficial/d/blob/b3a946a80ff0d37e23408e04c92609f8a1686587/123.docx"
       },
-       {
-        id: "doc-1",
+      {
+        id: "doc-3",
         name: "C_Programming_Practical_Index.pdf",
         description: "Official finalized documentation & architecture blueprint.",
         size: "2.4 MB",
         badge: "PDF",
-        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-        // Put your raw GitHub document address here:
         url: "https://github.com/ibpofficial/d/blob/467a60e1cf82cbe4838236be5ac4818c420e4bc2/C_Programming_Practical_Index.pdf"
       }
-    
     ];
 
     let currentModalLink = "";
@@ -262,12 +660,10 @@
     function showToast(msg) {
       const toast = document.getElementById("toast");
       document.getElementById("toast-text").innerText = msg;
-      toast.classList.remove("translate-y-16", "opacity-0");
-      toast.classList.add("translate-y-0", "opacity-100");
+      toast.classList.remove("hidden-toast");
       setTimeout(() => {
-        toast.classList.remove("translate-y-0", "opacity-100");
-        toast.classList.add("translate-y-16", "opacity-0");
-      }, 2200);
+        toast.classList.add("hidden-toast");
+      }, 2600);
     }
 
     // Clipboard copy with iframe safety
@@ -285,9 +681,11 @@
       }
     }
 
-    // Direct download trigger
+    // Trigger single file download
     function triggerDownload(url, filename) {
       const directUrl = normalizeGithubRawUrl(url);
+
+      // Primary download trigger via Anchor element
       const a = document.createElement("a");
       a.href = directUrl;
       a.download = filename || "download";
@@ -295,21 +693,34 @@
       a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      showToast("Download started: " + (filename || "file"));
+      setTimeout(() => document.body.removeChild(a), 150);
+
+      // Secondary fallback trigger via hidden iframe for browser compatibility
+      setTimeout(() => {
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = directUrl;
+        document.body.appendChild(iframe);
+        setTimeout(() => {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }, 6000);
+      }, 200);
     }
 
-    // Download all configured files sequentially
+    // Download ALL THREE configured files sequentially
     function downloadAllFiles() {
+      if (!CONFIG_FILES || CONFIG_FILES.length === 0) return;
+
+      showToast(`⚡ Downloading ALL ${CONFIG_FILES.length} files...`);
+
       CONFIG_FILES.forEach((f, idx) => {
         setTimeout(() => {
           triggerDownload(f.url, f.name);
-        }, idx * 450);
+        }, idx * 600); // 600ms spacing ensures browser triggers all downloads
       });
-      showToast(`Triggered ${CONFIG_FILES.length} downloads`);
     }
 
-    // Render file cards
+    // Render file cards in doodle notebook style
     function renderFileList(list = CONFIG_FILES) {
       const container = document.getElementById("file-grid");
       const empty = document.getElementById("empty-state");
@@ -321,75 +732,49 @@
       }
 
       empty.classList.add("hidden");
+
       container.innerHTML = list.map(item => {
         const directUrl = normalizeGithubRawUrl(item.url);
-        // Build the cross-device beam URL that auto-triggers when opened elsewhere
         const crossDeviceUrl = new URL(window.location.origin + window.location.pathname);
         crossDeviceUrl.searchParams.set("download", item.id);
 
         return `
-          <div class="glass-surface w-full max-w-2xl min-h-64 p-6 rounded-xl border border-zinc-800/80 hover:border-zinc-700 transition flex flex-col justify-between group">
-            <div class="space-y-2">
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded border ${item.badgeColor || 'text-zinc-400 bg-zinc-800 border-zinc-700'}">
-                    ${escapeHtml(item.badge || 'FILE')}
-                  </span>
-                  <span class="text-xs text-zinc-500 font-mono">${escapeHtml(item.size || '')}</span>
-                </div>
-                
-                <div class="flex items-center gap-1">
-                  <!-- QR Button for beam transfer -->
-                  <button 
-                    onclick="openFileQr('${item.id}')" 
-                    title="Scan QR on phone to download this file"
-                    class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                  </button>
-
-                  <!-- Direct link copy -->
-                  <button 
-                    onclick="copyText('${crossDeviceUrl.toString()}', 'Transfer link copied!')" 
-                    title="Copy cross-device direct download URL"
-                    class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                  </button>
-                </div>
-              </div>
-
+          <div class="doodle-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
               <div>
-                <h2 class="text-sm font-semibold text-zinc-100 font-mono tracking-tight break-all">
-                  ${escapeHtml(item.name)}
-                </h2>
-                <p class="text-xs text-zinc-400 mt-0.5 line-clamp-2">
-                  ${escapeHtml(item.description || 'GitHub hosted document')}
-                </p>
+                <span class="doodle-badge">${escapeHtml(item.badge || 'FILE')}</span>
+                <span style="font-size: 1rem; color: #666; margin-left: 6px;">${escapeHtml(item.size || '')}</span>
               </div>
+              <div style="font-size: 0.9rem; color: #808080;">ID: ${escapeHtml(item.id)}</div>
             </div>
 
-            <!-- Action button -->
-            <div class="pt-4 mt-2 border-t border-zinc-800/60 flex flex-col items-center gap-2">
-              <span class="text-[11px] text-zinc-500 font-mono truncate max-w-[150px]">
-                ${escapeHtml(item.id)}
-              </span>
+            <h3 style="font-family: 'Permanent Marker', cursive; font-size: 1.3rem; margin-bottom: 6px; word-break: break-all;">
+              📄 ${escapeHtml(item.name)}
+            </h3>
 
-              <button 
-                onclick="triggerDownload('${directUrl}', '${escapeHtml(item.name)}')" 
-                class="px-5 py-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium text-sm border border-emerald-500/30 transition flex items-center justify-center gap-2 active:scale-95"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download
+            <p style="font-size: 1.05rem; color: #444; margin-bottom: 12px;">
+              ${escapeHtml(item.description || 'Hosted securely on GitHub Direct')}
+            </p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed #1e1e24; padding-top: 10px;">
+              <div style="display: flex; gap: 6px;">
+                <button class="doodle-small-btn" onclick="openFileQr('${item.id}')" title="Scan QR to Download on Mobile">
+                  📱 Beam
+                </button>
+                <button class="doodle-small-btn" onclick="copyText('${crossDeviceUrl.toString()}', 'Transfer link copied!')" title="Copy Download Link">
+                  📋 Link
+                </button>
+              </div>
+
+              <button class="doodle-small-btn" onclick="triggerDownload('${directUrl}', '${escapeHtml(item.name)}')" style="background: #ffd166;">
+                💾 Download
               </button>
             </div>
           </div>
         `;
       }).join("");
 
-      document.getElementById("file-counter-label").innerText = `${list.length} File${list.length === 1 ? '' : 's'} Configured`;
+      document.getElementById("file-counter-label").innerText = `Configured Documents (${list.length})`;
     }
 
     function filterFiles(query) {
@@ -410,7 +795,6 @@
       const file = CONFIG_FILES.find(f => f.id === fileId);
       if (!file) return;
 
-      // URL containing ?download=fileId so another phone automatically starts download on open
       const beamUrl = new URL(window.location.origin + window.location.pathname);
       beamUrl.searchParams.set("download", file.id);
       currentModalLink = beamUrl.toString();
@@ -424,7 +808,7 @@
         text: currentModalLink,
         width: 170,
         height: 170,
-        colorDark: "#09090b",
+        colorDark: "#1e1e24",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
@@ -443,7 +827,7 @@
         text: currentModalLink,
         width: 170,
         height: 170,
-        colorDark: "#09090b",
+        colorDark: "#1e1e24",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
@@ -503,3 +887,4 @@
   </script>
 </body>
 </html>
+
