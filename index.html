@@ -77,7 +77,7 @@
         <button 
           id="btn-download-all" 
           onclick="downloadAllFiles()" 
-          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition"
+          class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition"
         >
           <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -131,7 +131,7 @@
     </div>
 
     <!-- Files Grid -->
-    <div id="file-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+    <div id="file-grid" class="grid grid-cols-1 justify-items-center gap-3.5">
       <!-- Injected dynamically from CONFIG_FILES -->
     </div>
 
@@ -203,13 +203,33 @@
     const CONFIG_FILES = [
       {
         id: "doc-1",
-        name: "Project_Proposal.pdf",
+        name: "C_Programming_Practical_Index.dox",
+        description: "Official finalized documentation & architecture blueprint.",
+        size: "2.4 MB",
+        badge: "PDF",
+        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+        // Put your raw GitHub document address here:
+        url: "https://github.com/ibpofficial/d/blob/58cd1311d33c469815b5c5610d07eb4f233d4e3e/C_Programming_Practical_Index.docx"
+      },
+       {
+        id: "doc-1",
+        name: "123.main.doc",
         description: "Official finalized documentation & architecture blueprint.",
         size: "2.4 MB",
         badge: "PDF",
         badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
         // Put your raw GitHub document address here:
         url: "https://github.com/ibpofficial/d/blob/b3a946a80ff0d37e23408e04c92609f8a1686587/123.docx"
+      },
+       {
+        id: "doc-1",
+        name: "C_Programming_Practical_Index.pdf",
+        description: "Official finalized documentation & architecture blueprint.",
+        size: "2.4 MB",
+        badge: "PDF",
+        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+        // Put your raw GitHub document address here:
+        url: "https://github.com/ibpofficial/d/blob/467a60e1cf82cbe4838236be5ac4818c420e4bc2/C_Programming_Practical_Index.pdf"
       }
     
     ];
@@ -308,7 +328,7 @@
         crossDeviceUrl.searchParams.set("download", item.id);
 
         return `
-          <div class="glass-surface p-4 rounded-xl border border-zinc-800/80 hover:border-zinc-700 transition flex flex-col justify-between group">
+          <div class="glass-surface w-full max-w-2xl min-h-64 p-6 rounded-xl border border-zinc-800/80 hover:border-zinc-700 transition flex flex-col justify-between group">
             <div class="space-y-2">
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0">
@@ -350,14 +370,14 @@
             </div>
 
             <!-- Action button -->
-            <div class="pt-4 mt-2 border-t border-zinc-800/60 flex items-center justify-between">
+            <div class="pt-4 mt-2 border-t border-zinc-800/60 flex flex-col items-center gap-2">
               <span class="text-[11px] text-zinc-500 font-mono truncate max-w-[150px]">
                 ${escapeHtml(item.id)}
               </span>
 
               <button 
                 onclick="triggerDownload('${directUrl}', '${escapeHtml(item.name)}')" 
-                class="px-3.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium text-xs border border-emerald-500/30 transition flex items-center gap-1.5 active:scale-95"
+                class="px-5 py-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium text-sm border border-emerald-500/30 transition flex items-center justify-center gap-2 active:scale-95"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
