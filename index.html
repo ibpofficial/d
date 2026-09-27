@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastFetch — GitHub Direct File Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fast, lightweight client-side QR generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0284c7',
+              accent: '#10b981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #09090b;
+      color: #fafafa;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #18181b;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    .glass-surface {
+      background: rgba(18, 18, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+
+  <!-- Top Minimal Header -->
+  <header class="border-b border-zinc-800/80 glass-surface sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
+            FastFetch <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">GitHub Direct</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button 
+          id="btn-download-all" 
+          onclick="downloadAllFiles()" 
+          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition"
+        >
+          <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download All
+        </button>
+
+        <button 
+          onclick="openShareHubQr()" 
+          class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-black font-semibold transition flex items-center gap-1.5"
+          title="Open this page on another phone or computer"
+        >
+          <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+          Beam to Device
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+    
+    <!-- Auto-download trigger banner (appears if ?download=id is loaded) -->
+    <div id="autodownload-banner" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs font-mono" id="autodownload-msg">Auto-triggering download for file...</span>
+      </div>
+      <button onclick="dismissAutoBanner()" class="text-xs text-zinc-400 hover:text-white">Dismiss</button>
+    </div>
+
+    <!-- Quick info bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-zinc-400">
+      <div>
+        <span class="font-medium text-zinc-200" id="file-counter-label">Configured Documents</span>
+        <span class="text-zinc-500 ml-1.5">— Hosted securely on GitHub</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <input 
+          id="search-input" 
+          type="text" 
+          placeholder="Filter files..." 
+          oninput="filterFiles(this.value)"
+          class="w-full sm:w-48 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+        />
+      </div>
+    </div>
+
+    <!-- Files Grid -->
+    <div id="file-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+      <!-- Injected dynamically from CONFIG_FILES -->
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden py-16 text-center text-zinc-500 text-xs">
+      No files match your search criteria.
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-800/80 py-4 px-6 text-center text-[11px] text-zinc-500">
+    Tip: Add your files in <code class="text-zinc-400 font-mono">CONFIG_FILES</code> array inside <code class="text-zinc-400 font-mono">index.html</code>. Scan any card's QR code on another phone/device to download instantly.
+  </footer>
+
+  <!-- Modal for QR code display -->
+  <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-surface w-full max-w-sm rounded-2xl p-6 border border-zinc-700 shadow-2xl relative text-center space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="modal-qr-title" class="text-sm font-semibold text-white truncate max-w-[240px]">Scan to Download</h3>
+        <button onclick="closeQrModal()" class="text-zinc-400 hover:text-white p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p id="modal-qr-desc" class="text-xs text-zinc-400">
+        Point another phone camera at this code. The file will download immediately.
+      </p>
+
+      <div class="flex justify-center p-3 bg-white rounded-xl mx-auto w-fit shadow-md">
+        <div id="modal-qrcode"></div>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <button 
+          id="modal-copy-link-btn" 
+          onclick="copyModalLink()" 
+          class="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span id="modal-copy-text">Copy Transfer Link</span>
+        </button>
+        <button 
+          onclick="closeQrModal()" 
+          class="w-full py-1 text-zinc-500 hover:text-zinc-300 text-xs"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 transform translate-y-16 opacity-0 transition duration-200 pointer-events-none">
+    <div class="px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-emerald-400 text-xs font-mono flex items-center gap-2 shadow-xl">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      <span id="toast-text">Message</span>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * =========================================================================
+     *  CONFIG_FILES - EDIT YOUR GITHUB FILE ADDRESSES HERE
+     * =========================================================================
+     * Paste raw GitHub links (`raw.githubusercontent.com/...`) or direct asset links.
+     * Note: If you paste a github.com/.../blob/... link, the app will automatically
+     * convert it into a raw.githubusercontent.com link for direct downloading.
+     */
+    const CONFIG_FILES = [
+      {
+        id: "doc-1",
+        name: "Project_Proposal.pdf",
+        description: "Official finalized documentation & architecture blueprint.",
+        size: "2.4 MB",
+        badge: "PDF",
+        badgeColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+        // Put your raw GitHub document address here:
+        url: "https://github.com/ibpofficial/d/blob/b3a946a80ff0d37e23408e04c92609f8a1686587/123.docx"
+      }
+    
+    ];
+
+    let currentModalLink = "";
+
+    // Convert standard GitHub blob links to direct downloadable raw links
+    function normalizeGithubRawUrl(url) {
+      if (!url) return "";
+      try {
+        const parsed = new URL(url.trim());
+        if (parsed.hostname === "github.com") {
+          const parts = parsed.pathname.split("/").filter(Boolean);
+          // Format: github.com/:owner/:repo/blob/:branch/...
+          if (parts.length >= 4 && parts[2] === "blob") {
+            const owner = parts[0];
+            const repo = parts[1];
+            const branch = parts[3];
+            const rest = parts.slice(4).join("/");
+            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${rest}`;
+          }
+        }
+        return url;
+      } catch (e) {
+        return url;
+      }
+    }
+
+    // Show lightweight toast notification
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-text").innerText = msg;
+      toast.classList.remove("translate-y-16", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+      setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-16", "opacity-0");
+      }, 2200);
+    }
+
+    // Clipboard copy with iframe safety
+    function copyText(str, msg = "Link copied!") {
+      try {
+        const el = document.createElement("textarea");
+        el.value = str;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        showToast(msg);
+      } catch (err) {
+        showToast("Error copying link");
+      }
+    }
+
+    // Direct download trigger
+    function triggerDownload(url, filename) {
+      const directUrl = normalizeGithubRawUrl(url);
+      const a = document.createElement("a");
+      a.href = directUrl;
+      a.download = filename || "download";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("Download started: " + (filename || "file"));
+    }
+
+    // Download all configured files sequentially
+    function downloadAllFiles() {
+      CONFIG_FILES.forEach((f, idx) => {
+        setTimeout(() => {
+          triggerDownload(f.url, f.name);
+        }, idx * 450);
+      });
+      showToast(`Triggered ${CONFIG_FILES.length} downloads`);
+    }
+
+    // Render file cards
+    function renderFileList(list = CONFIG_FILES) {
+      const container = document.getElementById("file-grid");
+      const empty = document.getElementById("empty-state");
+
+      if (!list || list.length === 0) {
+        container.innerHTML = "";
+        empty.classList.remove("hidden");
+        return;
+      }
+
+      empty.classList.add("hidden");
+      container.innerHTML = list.map(item => {
+        const directUrl = normalizeGithubRawUrl(item.url);
+        // Build the cross-device beam URL that auto-triggers when opened elsewhere
+        const crossDeviceUrl = new URL(window.location.origin + window.location.pathname);
+        crossDeviceUrl.searchParams.set("download", item.id);
+
+        return `
+          <div class="glass-surface p-4 rounded-xl border border-zinc-800/80 hover:border-zinc-700 transition flex flex-col justify-between group">
+            <div class="space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded border ${item.badgeColor || 'text-zinc-400 bg-zinc-800 border-zinc-700'}">
+                    ${escapeHtml(item.badge || 'FILE')}
+                  </span>
+                  <span class="text-xs text-zinc-500 font-mono">${escapeHtml(item.size || '')}</span>
+                </div>
+                
+                <div class="flex items-center gap-1">
+                  <!-- QR Button for beam transfer -->
+                  <button 
+                    onclick="openFileQr('${item.id}')" 
+                    title="Scan QR on phone to download this file"
+                    class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                  </button>
+
+                  <!-- Direct link copy -->
+                  <button 
+                    onclick="copyText('${crossDeviceUrl.toString()}', 'Transfer link copied!')" 
+                    title="Copy cross-device direct download URL"
+                    class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <h2 class="text-sm font-semibold text-zinc-100 font-mono tracking-tight break-all">
+                  ${escapeHtml(item.name)}
+                </h2>
+                <p class="text-xs text-zinc-400 mt-0.5 line-clamp-2">
+                  ${escapeHtml(item.description || 'GitHub hosted document')}
+                </p>
+              </div>
+            </div>
+
+            <!-- Action button -->
+            <div class="pt-4 mt-2 border-t border-zinc-800/60 flex items-center justify-between">
+              <span class="text-[11px] text-zinc-500 font-mono truncate max-w-[150px]">
+                ${escapeHtml(item.id)}
+              </span>
+
+              <button 
+                onclick="triggerDownload('${directUrl}', '${escapeHtml(item.name)}')" 
+                class="px-3.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium text-xs border border-emerald-500/30 transition flex items-center gap-1.5 active:scale-95"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("file-counter-label").innerText = `${list.length} File${list.length === 1 ? '' : 's'} Configured`;
+    }
+
+    function filterFiles(query) {
+      const q = (query || "").toLowerCase().trim();
+      if (!q) {
+        renderFileList(CONFIG_FILES);
+        return;
+      }
+      const filtered = CONFIG_FILES.filter(f => 
+        f.name.toLowerCase().includes(q) || 
+        (f.description && f.description.toLowerCase().includes(q)) ||
+        (f.badge && f.badge.toLowerCase().includes(q))
+      );
+      renderFileList(filtered);
+    }
+
+    function openFileQr(fileId) {
+      const file = CONFIG_FILES.find(f => f.id === fileId);
+      if (!file) return;
+
+      // URL containing ?download=fileId so another phone automatically starts download on open
+      const beamUrl = new URL(window.location.origin + window.location.pathname);
+      beamUrl.searchParams.set("download", file.id);
+      currentModalLink = beamUrl.toString();
+
+      document.getElementById("modal-qr-title").innerText = file.name;
+      document.getElementById("modal-qr-desc").innerText = "Scan on your phone or other device. It will automatically download this file.";
+      
+      const container = document.getElementById("modal-qrcode");
+      container.innerHTML = "";
+      new QRCode(container, {
+        text: currentModalLink,
+        width: 170,
+        height: 170,
+        colorDark: "#09090b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      document.getElementById("qr-modal").classList.remove("hidden");
+    }
+
+    function openShareHubQr() {
+      currentModalLink = window.location.href;
+      document.getElementById("modal-qr-title").innerText = "Open FastFetch Hub";
+      document.getElementById("modal-qr-desc").innerText = "Scan to open the complete file list on another phone, tablet or laptop.";
+
+      const container = document.getElementById("modal-qrcode");
+      container.innerHTML = "";
+      new QRCode(container, {
+        text: currentModalLink,
+        width: 170,
+        height: 170,
+        colorDark: "#09090b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      document.getElementById("qr-modal").classList.remove("hidden");
+    }
+
+    function closeQrModal() {
+      document.getElementById("qr-modal").classList.add("hidden");
+    }
+
+    function copyModalLink() {
+      if (currentModalLink) {
+        copyText(currentModalLink, "Link copied!");
+        const label = document.getElementById("modal-copy-text");
+        label.innerText = "Copied!";
+        setTimeout(() => label.innerText = "Copy Transfer Link", 2000);
+      }
+    }
+
+    function dismissAutoBanner() {
+      document.getElementById("autodownload-banner").classList.add("hidden");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Check if the page was opened on another phone/device via QR code with ?download=ID
+    window.addEventListener("DOMContentLoaded", () => {
+      renderFileList(CONFIG_FILES);
+
+      const params = new URLSearchParams(window.location.search);
+      const autoId = params.get("download") || params.get("id");
+
+      if (autoId) {
+        const target = CONFIG_FILES.find(f => f.id === autoId || f.name.toLowerCase() === autoId.toLowerCase());
+        if (target) {
+          const banner = document.getElementById("autodownload-banner");
+          const msg = document.getElementById("autodownload-msg");
+          msg.innerText = `Auto-downloading "${target.name}" to this system...`;
+          banner.classList.remove("hidden");
+
+          // Trigger download immediately
+          setTimeout(() => {
+            triggerDownload(target.url, target.name);
+          }, 600);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
